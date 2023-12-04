@@ -1,6 +1,6 @@
 # ==============================================================================================================
-# 作成者:dimebag29 作成日:2023年12月3日 バージョン:v0.0
-# (Author:dimebag29 Creation date:December 3, 2023 Version:v0.0)
+# 作成者:dimebag29 作成日:2023年12月4日 バージョン:v0.1
+# (Author:dimebag29 Creation date:December 4, 2023 Version:v0.1)
 #
 # このプログラムのライセンスはLGPLv3です。pynputライブラリのライセンスを継承しています。
 # (This program is licensed to LGPLv3. Inherits the license of the pynput library.)
@@ -204,7 +204,7 @@ def CheckVRChatRunning():
     # 実行中のプロセス一覧の中からVRChatのexeがあるか確認 https://web-lh.fromation.co.jp/archives/10000047001
     for proc in psutil.process_iter():
         try:
-            if r"C:\Program Files (x86)\Steam\steamapps\common\VRChat\VRChat.exe" == proc.exe():
+            if "VRChat.exe" == os.path.basename(proc.exe()):
                 IsVRChatRunning = True
                 break                                                           # これ以上プロセスを読み込む必要はないのでループを抜ける
         except:
@@ -505,7 +505,7 @@ def MainLoopThread():
 
 # ================================================== 初期化 ====================================================
 SoftwareName = u"セーブコード自動読み込みツール"                                  # このソフトの名前
-SoftwareVersion = u"v0.0"                                                       # このソフトのバージョン
+SoftwareVersion = u"v0.1"                                                       # このソフトのバージョン
 
 ExeDir = os.path.dirname(sys.argv[0])                                           # このプログラム(exe)が置かれているディレクトリ取得
 
