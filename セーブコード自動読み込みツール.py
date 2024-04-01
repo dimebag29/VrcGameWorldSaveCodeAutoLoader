@@ -1,6 +1,6 @@
 # ==============================================================================================================
-# 作成者:dimebag29 作成日:2023年12月4日 バージョン:v0.1
-# (Author:dimebag29 Creation date:December 4, 2023 Version:v0.1)
+# 作成者:dimebag29 作成日:2024年4月1日 バージョン:v0.2
+# (Author:dimebag29 Creation date:April 1, 2024 Version:v0.2)
 #
 # このプログラムのライセンスはLGPLv3です。pynputライブラリのライセンスを継承しています。
 # (This program is licensed to LGPLv3. Inherits the license of the pynput library.)
@@ -201,16 +201,13 @@ def GetLastLineNumFromLogFile(InputFilePath):
 def CheckVRChatRunning():
     IsVRChatRunning = False
     
-    # 実行中のプロセス一覧の中からVRChatのexeがあるか確認 https://web-lh.fromation.co.jp/archives/10000047001
-    for proc in psutil.process_iter():
-        try:
-            if "VRChat.exe" == os.path.basename(proc.exe()):
-                IsVRChatRunning = True
-                break                                                           # これ以上プロセスを読み込む必要はないのでループを抜ける
-        except:
-            # アクセス許可なしの場合など
-            pass
-    
+    SendCommand = 'tasklist /nh /fi "IMAGENAME eq VRChat.exe"'
+    output = subprocess.run(SendCommand, startupinfo=StartupInfo, stdout=subprocess.PIPE, text=True)
+    #print(output.stdout.split('\n')[1])
+
+    if "VRChat.exe" in output.stdout.split('\n')[1]:
+        IsVRChatRunning = True
+
     return IsVRChatRunning
 
 
@@ -236,16 +233,15 @@ def TryGetUserInfo(InputLogFilePath):
             # ユーザー名, ユーザーID 取得
             if "User Authenticated: " in Line:                                  # 現在の行内に「User Authenticated: 」という文字列が含まれてるか
                 SplitStr = Line[54:].split(" (usr_")                            # 現在の行を「 (usr_」で区切ってリスト化
-                PlayerInfoDict["Name"] = CheckAndFix_DirAndFileName(SplitStr[0])    # ユーザー名
-                PlayerInfoDict["Id"]   = "usr_" + SplitStr[1].rstrip()[:-1]         # ユーザーID
-                break                                                           # これ以上ファイルを読み込む必要はないのでループを抜ける
+                PlayerInfoDict["Name"] = CheckAndFix_DirAndFileName(SplitStr[0])# ユーザー名
+                PlayerInfoDict["Id"]   = "usr_" + SplitStr[1].rstrip()[:-1]     # ユーザーID
+            
+            # 全てのプレイヤー情報がそろったらTrueを返す
+            if None != PlayerInfoDict["VrMode"] and "" != PlayerInfoDict["Name"] and "" != PlayerInfoDict["Id"]:
+                return True
     
-    # 全てのプレイヤー情報がそろっていたらTrueを返す。まだそろってなかったらFalseを返す
-    if None != PlayerInfoDict["VrMode"] and "" != PlayerInfoDict["Name"] and "" != PlayerInfoDict["Id"]:
-        print(PlayerInfoDict)
-        return True
-    else:
-        return False
+    # まだそろってなかったらFalseを返す
+    return False
 
 
 # 現在のプレイヤー用のフォルダを作る。必ずTureを返す
@@ -443,6 +439,7 @@ def MainLoopThread():
         if False == GetUserInfo:                                                # プレイヤー情報をまだ取得出来てなかったら実行
             print("TryGetPlayerInfo")
             GetUserInfo = TryGetUserInfo(LogFilePath)                           # プレイヤー情報取得をトライ。成功したらTrue、失敗したらFalseが返ってくる
+            print(PlayerInfoDict)
 
             # VRChat起動直後で、プレイヤー情報をまだ取得できなかったらログファイル監視処理をここでスキップ
             if False == GetUserInfo:
@@ -554,6 +551,10 @@ Message = {
     "sourceApp" : "TEST_App"    # Somewhere to put your app name for debugging purposes
     }
 
+# subprocessでコマンド実行したときにコマンドプロンプトのウインドウが表示されないようにする設定 (https://chichimotsu.hateblo.jp/entry/20140712/1405147421)
+StartupInfo = subprocess.STARTUPINFO()
+StartupInfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+StartupInfo.wShowWindow = subprocess.SW_HIDE
 
 # ============================================= 多重起動してたら終了 =============================================
 MyExeName = os.path.basename(sys.argv[0])                                       # 自分のexe名を取得 (拡張子付き)
@@ -628,4 +629,3 @@ TextView_SystemMessage.place(x=5, y=150, width=350, height=67)
 # GUI生成 ----------------------------------------------------------------------
 root.iconbitmap(IconPath)                                                       # アイコン設定
 root.mainloop()                                                                 # 画面を表示し続ける
-
