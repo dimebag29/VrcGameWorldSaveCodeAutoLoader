@@ -202,7 +202,7 @@ def CheckVRChatRunning():
     IsVRChatRunning = False
     
     SendCommand = 'tasklist /nh /fi "IMAGENAME eq VRChat.exe"'
-    output = subprocess.run(SendCommand, startupinfo=StartupInfo, stdout=subprocess.PIPE, text=True)
+    output = subprocess.run(SendCommand, startupinfo=StartupInfo, stdout=subprocess.PIPE, shell=True, text=True)
     #print(output.stdout.split('\n')[1])
 
     if "VRChat.exe" in output.stdout.split('\n')[1]:
