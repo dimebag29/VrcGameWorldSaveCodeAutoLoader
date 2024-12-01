@@ -1,6 +1,6 @@
 # ==============================================================================================================
-# 作成者:dimebag29 作成日:2024年4月1日 バージョン:v0.2
-# (Author:dimebag29 Creation date:April 1, 2024 Version:v0.2)
+# 作成者:dimebag29 作成日:2024年12月1日 バージョン:v0.3
+# (Author:dimebag29 Creation date:December 1, 2024 Version:v0.3)
 #
 # このプログラムのライセンスはLGPLv3です。pynputライブラリのライセンスを継承しています。
 # (This program is licensed to LGPLv3. Inherits the license of the pynput library.)
@@ -216,7 +216,7 @@ def TryGetUserInfo(InputLogFilePath):
     global PlayerInfoDict
 
     # 初期化
-    PlayerInfoDict["VrMode"] = None                                             # VRかどうか
+    PlayerInfoDict["VrMode"] = True                                             # VRかどうか
     PlayerInfoDict["Name"]   = ""                                               # ユーザー名
     PlayerInfoDict["Id"]     = ""                                               # ユーザーID
 
@@ -224,11 +224,8 @@ def TryGetUserInfo(InputLogFilePath):
     with open(InputLogFilePath, 'r', encoding="utf-8") as f:
         for Line in f:
             # VRかどうか 取得
-            if "XR Device: " in Line:                                           # 現在の行内に「XR Device: 」という文字列が含まれてるか
-                if "None" in Line:                                              # 現在の行内に「None」という文字列が含まれてるか
-                    PlayerInfoDict["VrMode"] = False                            # VRではない
-                else:
-                    PlayerInfoDict["VrMode"] = True                             # VRである
+            if "--no-vr" in Line:                                               # 現在の行内に「--no-vr」という文字列が含まれてるか
+                PlayerInfoDict["VrMode"] = False                                # VRではない
                 
             # ユーザー名, ユーザーID 取得
             if "User Authenticated: " in Line:                                  # 現在の行内に「User Authenticated: 」という文字列が含まれてるか
@@ -236,11 +233,12 @@ def TryGetUserInfo(InputLogFilePath):
                 PlayerInfoDict["Name"] = CheckAndFix_DirAndFileName(SplitStr[0])# ユーザー名
                 PlayerInfoDict["Id"]   = "usr_" + SplitStr[1].rstrip()[:-1]     # ユーザーID
             
-            # 全てのプレイヤー情報がそろったらTrueを返す
-            if None != PlayerInfoDict["VrMode"] and "" != PlayerInfoDict["Name"] and "" != PlayerInfoDict["Id"]:
+            # ユーザー名, ユーザーIDがそろったらTrueを返す
+            if "" != PlayerInfoDict["Name"] and "" != PlayerInfoDict["Id"]:
                 return True
     
     # まだそろってなかったらFalseを返す
+    PlayerInfoDict["VrMode"] = False                                            # VRではない
     return False
 
 
@@ -502,7 +500,7 @@ def MainLoopThread():
 
 # ================================================== 初期化 ====================================================
 SoftwareName = u"セーブコード自動読み込みツール"                                  # このソフトの名前
-SoftwareVersion = u"v0.1"                                                       # このソフトのバージョン
+SoftwareVersion = u"v0.3"                                                       # このソフトのバージョン
 
 ExeDir = os.path.dirname(sys.argv[0])                                           # このプログラム(exe)が置かれているディレクトリ取得
 
